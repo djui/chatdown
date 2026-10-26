@@ -175,7 +175,7 @@
     return head.join("\n\n") + (body ? "\n\n" + body : "") + "\n";
   }
 
-  function filenameFor(conversation) {
+  function filenameFor(conversation, ext = "md") {
     const slug = String(conversation.title || "chat")
       .toLowerCase()
       .normalize("NFKD")
@@ -183,7 +183,7 @@
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "")
       .slice(0, 80);
-    return `${slug || "chat"}.md`;
+    return `${slug || "chat"}.${ext}`;
   }
 
   const api = { DEFAULT_OPTIONS, SOURCE_NAMES, assistantName, groupTurns, turnSnippet, renderMarkdown, filenameFor, fence };

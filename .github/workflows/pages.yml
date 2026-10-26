@@ -7,6 +7,8 @@ on:
       - site/**
       - src/content/parsers.js
       - src/shared/markdown.js
+      - src/shared/md2html.js
+      - src/shared/formats.js
       - scripts/build-site.sh
       - .github/workflows/pages.yml
   workflow_dispatch:

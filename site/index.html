@@ -72,7 +72,7 @@
       <p class="eyebrow">Free Chrome extension · open source</p>
       <h1>Your AI chats,<br>as clean <span class="md">Markdown</span>.</h1>
       <p class="lede">
-        Chatdown exports ChatGPT, Codex, Claude and Claude&nbsp;Code conversations to a tidy <code>.md</code> file.
+        Chatdown exports ChatGPT, Codex, Claude and Claude&nbsp;Code conversations to tidy Markdown, or to HTML, PDF, plain text and JSON.
         You pick exactly which messages go in, and whether the AI's thinking and tool use come along.
       </p>
       <div class="ctas">
@@ -133,12 +133,19 @@
 
           <div class="output">
             <div class="output-head">
+              <div class="fmt" role="group" aria-label="Format">
+                <button data-format="markdown" aria-pressed="true">Markdown</button>
+                <button data-format="html" aria-pressed="false">HTML</button>
+                <button data-format="text" aria-pressed="false">Text</button>
+                <button data-format="json" aria-pressed="false">JSON</button>
+              </div>
               <span class="file" id="d-file">conversation.md</span>
               <span class="stats" id="d-stats"></span>
               <button class="mini" id="d-copy">Copy</button>
               <button class="mini" id="d-download">Download</button>
             </div>
-            <pre class="md-out" id="d-out" tabindex="0" aria-label="Generated Markdown"></pre>
+            <pre class="md-out" id="d-out" tabindex="0" aria-label="Generated export"></pre>
+            <iframe class="html-out" id="d-frame" title="HTML export preview" sandbox hidden></iframe>
           </div>
         </div>
       </div>
@@ -165,7 +172,7 @@
         <li>
           <span class="step-n">3</span>
           <h3>Pick and export</h3>
-          <p>Drop the dead ends, keep the good parts. Then copy the Markdown, preview it, or download a <code>.md</code> file named after the chat.</p>
+          <p>Drop the dead ends, keep the good parts. Then copy it, preview it, or download Markdown, HTML, PDF, text or JSON, named after the chat.</p>
         </li>
       </ol>
     </div>
@@ -195,8 +202,8 @@
           <p>Fenced blocks keep their language, nested fences are escaped, and Claude artifacts are exported as titled code blocks.</p>
         </article>
         <article>
-          <h3>Ready for your notes</h3>
-          <p>Optional note properties (title, source, link, model, dates, as YAML front matter) drop straight into Obsidian, a docs repo or a static site.</p>
+          <h3>Markdown, HTML, PDF, text or JSON</h3>
+          <p>One click to switch formats. The HTML page is a single readable file; PDF goes through Chrome's own Save as PDF; JSON keeps every block for your own tools. Markdown can start with note properties for Obsidian or a docs repo.</p>
         </article>
         <article>
           <h3>Nothing leaves your browser</h3>
@@ -264,8 +271,8 @@
         <p>For those two, Chatdown reads the rendered page rather than the underlying data, and their pages change often. If an export looks off, please <a href="https://github.com/djui/chatdown/issues/new">open an issue</a> with the page type, and we'll tighten the selectors.</p>
       </details>
       <details>
-        <summary>Other formats?</summary>
-        <p>Markdown for now. Because every site is first turned into one common format, HTML, JSON or plain-text exports are straightforward to add.</p>
+        <summary>Which formats can I export?</summary>
+        <p>Markdown, a self-contained HTML page, PDF, plain text and JSON. PDF uses Chrome's own <b>Save as PDF</b>, so the text stays selectable and nothing is uploaded. Copying in HTML or PDF mode puts formatted text on the clipboard, ready to paste into Docs, Notion or an email.</p>
       </details>
     </div>
   </section>
@@ -283,6 +290,8 @@
 
 <script src="lib/parsers.js"></script>
 <script src="lib/markdown.js"></script>
+<script src="lib/md2html.js"></script>
+<script src="lib/formats.js"></script>
 <script src="main.js"></script>
 </body>
 </html>

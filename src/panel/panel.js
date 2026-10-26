@@ -1,7 +1,8 @@
 (function () {
   "use strict";
 
-  const { DEFAULT_OPTIONS, assistantName, groupTurns, turnSnippet, renderMarkdown, filenameFor } = globalThis.ChatdownMarkdown;
+  const { DEFAULT_OPTIONS, assistantName, groupTurns, turnSnippet, renderMarkdown } = globalThis.ChatdownMarkdown;
+  const { FORMATS, render: renderExport, filenameForFormat } = globalThis.ChatdownFormats;
 
   const SUPPORTED = /^https:\/\/(chatgpt\.com|chat\.openai\.com|claude\.ai)\//;
   const CONTENT_FILES = [
@@ -265,32 +266,58 @@
 
   // ---------- output ----------
 
-  function currentMarkdown() {
-    const ids = state.turns.filter((t) => state.selected.has(t.id)).map((t) => t.id);
-    return renderMarkdown(state.conversation, state.turns, ids, state.options);
+  function format() {
+    return FORMATS[state.options.format] ? state.options.format : "markdown";
+  }
+
+  function selectedIds() {
+    return state.turns.filter((t) => state.selected.has(t.id)).map((t) => t.id);
+  }
+
+  function output(fmt = format()) {
+    return renderExport(fmt, state.conversation, state.turns, selectedIds(), state.options);
   }
 
   async function copy() {
-    const md = currentMarkdown();
+    const fmt = format();
+    const rich = fmt === "html" || fmt === "pdf";
+    // HTML and PDF copy as rich text (pastes formatted into Docs, Notion, mail),
+    // with the Markdown as the plain-text fallback.
+    const plain = rich ? output("markdown") : output(fmt);
     try {
-      await navigator.clipboard.writeText(md);
+      if (rich) {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/html": new Blob([output("html")], { type: "text/html" }),
+            "text/plain": new Blob([plain], { type: "text/plain" }),
+          }),
+        ]);
+      } else {
+        await navigator.clipboard.writeText(plain);
+      }
     } catch {
       const ta = document.createElement("textarea");
-      ta.value = md;
+      ta.value = plain;
       document.body.appendChild(ta);
       ta.select();
       document.execCommand("copy");
       ta.remove();
     }
-    toast("Copied Markdown");
+    toast(rich ? "Copied as formatted text" : `Copied ${FORMATS[fmt].label}`);
   }
 
-  function download() {
-    const blob = new Blob([currentMarkdown()], { type: "text/markdown;charset=utf-8" });
+  async function download() {
+    const fmt = format();
+    if (fmt === "pdf") {
+      await chrome.storage.session.set({ printHtml: output("pdf") });
+      await chrome.tabs.create({ url: chrome.runtime.getURL("src/print/print.html") });
+      return;
+    }
+    const blob = new Blob([output(fmt)], { type: `${FORMATS[fmt].mime};charset=utf-8` });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = filenameFor(state.conversation);
+    a.download = filenameForFormat(state.conversation, fmt);
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -298,9 +325,27 @@
   }
 
   function preview() {
-    $("preview-text").value = currentMarkdown();
+    const fmt = format();
+    const visual = fmt === "html" || fmt === "pdf";
+    $("preview-title").textContent = `${FORMATS[fmt].label} preview`;
+    $("preview-text").hidden = visual;
+    $("preview-frame").hidden = !visual;
+    if (visual) $("preview-frame").srcdoc = output(fmt);
+    else $("preview-text").value = output(fmt);
     $("preview").showModal();
     $("preview-text").scrollTop = 0;
+  }
+
+  function updateFormatUi() {
+    const fmt = format();
+    $("format").value = fmt;
+    $("download-btn").textContent = fmt === "pdf" ? "Save as PDF" : `Download .${FORMATS[fmt].ext}`;
+  }
+
+  function onFormatChange() {
+    state.options.format = $("format").value;
+    chrome.storage.local.set({ options: state.options });
+    updateFormatUi();
   }
 
   let toastTimer;
@@ -329,6 +374,7 @@
       if (el.type === "checkbox") el.checked = !!v;
       else el.value = v;
     }
+    updateFormatUi();
   }
 
   function onOptionChange(e) {
@@ -349,6 +395,7 @@
   $("download-btn").addEventListener("click", download);
   $("preview-btn").addEventListener("click", preview);
   $("options").addEventListener("change", onOptionChange);
+  $("format").addEventListener("change", onFormatChange);
 
   chrome.tabs.onActivated.addListener(() => load());
 

@@ -4,7 +4,8 @@
   "use strict";
 
   const { parseClaude, parseChatGPT } = window.ChatdownParsers;
-  const { DEFAULT_OPTIONS, assistantName, groupTurns, turnSnippet, renderMarkdown, filenameFor } = window.ChatdownMarkdown;
+  const { DEFAULT_OPTIONS, assistantName, groupTurns, turnSnippet } = window.ChatdownMarkdown;
+  const { FORMATS, render, filenameForFormat } = window.ChatdownFormats;
 
   // ---------- samples (shaped like each site's conversation API) ----------
 
@@ -69,6 +70,7 @@
   const $ = (id) => document.getElementById(id);
   const state = {
     sample: "claude",
+    format: "markdown",
     conv: null,
     turns: [],
     selected: new Set(),
@@ -84,7 +86,6 @@
     state.last = null;
     $("d-source").textContent = SOURCE[sample];
     $("d-title").textContent = state.conv.title;
-    $("d-file").textContent = filenameFor(state.conv);
     $("d-select-assistant").textContent = `${SOURCE[sample]}'s`;
     document.querySelectorAll("[data-sample]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.sample === sample)));
     renderTurns();
@@ -185,9 +186,9 @@
 
   // ---------- output ----------
 
-  function markdown() {
+  function output() {
     const ids = state.turns.filter((t) => state.selected.has(t.id)).map((t) => t.id);
-    return renderMarkdown(state.conv, state.turns, ids, state.opts);
+    return render(state.format, state.conv, state.turns, ids, state.opts);
   }
 
   function escapeHtml(s) {
@@ -226,8 +227,13 @@
   }
 
   function renderOutput() {
-    const md = markdown();
-    $("d-out").innerHTML = highlight(md);
+    const md = output();
+    const html = state.format === "html";
+    $("d-file").textContent = filenameForFormat(state.conv, state.format);
+    $("d-out").hidden = html;
+    $("d-frame").hidden = !html;
+    if (html) $("d-frame").srcdoc = md;
+    else $("d-out").innerHTML = state.format === "markdown" ? highlight(md) : escapeHtml(md);
     const lines = md.split("\n").length;
     $("d-stats").textContent = `${lines} lines · ${md.length.toLocaleString()} chars`;
   }
@@ -235,6 +241,13 @@
   // ---------- wiring ----------
 
   document.querySelectorAll("[data-sample]").forEach((b) => b.addEventListener("click", () => load(b.dataset.sample)));
+  document.querySelectorAll("[data-format]").forEach((b) =>
+    b.addEventListener("click", () => {
+      state.format = b.dataset.format;
+      document.querySelectorAll("[data-format]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      renderOutput();
+    })
+  );
   document.querySelectorAll("[data-select]").forEach((b) => b.addEventListener("click", () => quick(b.dataset.select)));
   document.querySelectorAll("[data-opt]").forEach((el) => {
     el.addEventListener("change", () => {
@@ -246,7 +259,7 @@
 
   $("d-copy").addEventListener("click", async (e) => {
     try {
-      await navigator.clipboard.writeText(markdown());
+      await navigator.clipboard.writeText(output());
       e.target.textContent = "Copied";
     } catch {
       e.target.textContent = "Copy failed";
@@ -255,10 +268,10 @@
   });
 
   $("d-download").addEventListener("click", () => {
-    const url = URL.createObjectURL(new Blob([markdown()], { type: "text/markdown;charset=utf-8" }));
+    const url = URL.createObjectURL(new Blob([output()], { type: `${FORMATS[state.format].mime};charset=utf-8` }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = filenameFor(state.conv);
+    a.download = filenameForFormat(state.conv, state.format);
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   });
