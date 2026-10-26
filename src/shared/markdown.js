@@ -10,9 +10,20 @@
     includeTimestamps: false,
     frontMatter: true,
     headingStyle: "heading", // "heading" | "bold"
-    userLabel: "User",
-    assistantLabel: "Assistant",
+    userLabel: "You",
+    assistantLabel: "", // empty: use the site's name (ChatGPT, Claude, ...)
   };
+
+  const SOURCE_NAMES = {
+    chatgpt: "ChatGPT",
+    codex: "Codex",
+    claude: "Claude",
+    "claude-code": "Claude Code",
+  };
+
+  function assistantName(conversation, opts) {
+    return (opts && opts.assistantLabel) || SOURCE_NAMES[conversation && conversation.source] || "Assistant";
+  }
 
   // A turn is one request (user message) or one response (all consecutive
   // non-user messages, which folds tool calls and tool outputs into the answer).
@@ -45,9 +56,8 @@
     for (const b of turn.blocks) {
       if (b.type === "text") parts.push(b.text);
       else if (b.type === "code") parts.push(b.text);
-      else if (b.type === "artifact") parts.push(`[artifact: ${b.title}]`);
+      else if (b.type === "artifact") parts.push(`${b.title}:`);
       else if (b.type === "attachment") parts.push(`[${b.name}]`);
-      else if (b.type === "tool_use") parts.push(`[${b.name}]`);
       if (parts.join(" ").length > max) break;
     }
     const s = parts
@@ -117,8 +127,8 @@
     }
   }
 
-  function renderTurn(turn, opts) {
-    const label = turn.role === "user" ? opts.userLabel : opts.assistantLabel;
+  function renderTurn(turn, opts, conversation) {
+    const label = turn.role === "user" ? opts.userLabel || DEFAULT_OPTIONS.userLabel : assistantName(conversation, opts);
     const meta = [];
     if (opts.includeTimestamps && turn.createdAt) meta.push(formatDate(turn.createdAt));
     if (opts.includeTimestamps && turn.role === "assistant" && turn.model) meta.push(turn.model);
@@ -141,13 +151,6 @@
     return JSON.stringify(String(s));
   }
 
-  const SOURCE_NAMES = {
-    chatgpt: "ChatGPT",
-    codex: "Codex",
-    claude: "Claude",
-    "claude-code": "Claude Code",
-  };
-
   function renderMarkdown(conversation, turns, selectedIds, options) {
     const opts = Object.assign({}, DEFAULT_OPTIONS, options || {});
     const selected = selectedIds ? new Set(selectedIds) : null;
@@ -168,7 +171,7 @@
 
     // Bold labels have no heading to visually separate turns, so add rules.
     const sep = opts.headingStyle === "bold" ? "\n\n---\n\n" : "\n\n";
-    const body = chosen.map((t) => renderTurn(t, opts)).join(sep);
+    const body = chosen.map((t) => renderTurn(t, opts, conversation)).join(sep);
     return head.join("\n\n") + (body ? "\n\n" + body : "") + "\n";
   }
 
@@ -183,7 +186,7 @@
     return `${slug || "chat"}.md`;
   }
 
-  const api = { DEFAULT_OPTIONS, groupTurns, turnSnippet, renderMarkdown, filenameFor, fence };
+  const api = { DEFAULT_OPTIONS, SOURCE_NAMES, assistantName, groupTurns, turnSnippet, renderMarkdown, filenameFor, fence };
   root.ChatdownMarkdown = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);

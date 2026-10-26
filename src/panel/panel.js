@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const { DEFAULT_OPTIONS, groupTurns, turnSnippet, renderMarkdown, filenameFor } = globalThis.ChatdownMarkdown;
+  const { DEFAULT_OPTIONS, assistantName, groupTurns, turnSnippet, renderMarkdown, filenameFor } = globalThis.ChatdownMarkdown;
 
   const SUPPORTED = /^https:\/\/(chatgpt\.com|chat\.openai\.com|claude\.ai)\//;
   const CONTENT_FILES = [
@@ -84,9 +84,10 @@
     if (!sameUrl) state.expanded = new Set();
     state.lastIndex = null;
 
-    const via = res.method === "api" ? "full export" : "from page content";
-    const warn = (res.warnings || []).join(" ");
-    setStatus(warn || `${state.turns.length} turns · ${via}`, !!warn);
+    const n = state.turns.length;
+    const via = res.method === "api" ? "complete" : "read from the page";
+    const warn = res.warnings && res.warnings.length ? "Read from the page, so thinking and tool use may be missing." : "";
+    setStatus(warn || `${n} message${n === 1 ? "" : "s"} · ${via}`, !!warn);
     render();
   }
 
@@ -118,18 +119,20 @@
     $("title").title = conv.title;
     $("source").hidden = false;
     $("source").textContent = SOURCE_NAMES[conv.source] || conv.source;
+    $("select-assistant").textContent = `${SOURCE_NAMES[conv.source] || "Assistant"}'s`;
+    $("assistant-label").placeholder = SOURCE_NAMES[conv.source] || "Assistant";
 
     const list = $("turns");
     list.textContent = "";
-    let requestNo = 0;
-    state.turns.forEach((turn, index) => {
-      if (turn.role === "user") requestNo++;
-      list.appendChild(renderTurn(turn, index, requestNo));
-    });
+    state.turns.forEach((turn, index) => list.appendChild(renderTurn(turn, index)));
     updateCount();
   }
 
-  function renderTurn(turn, index, requestNo) {
+  function speaker(turn) {
+    return turn.role === "user" ? state.options.userLabel || DEFAULT_OPTIONS.userLabel : assistantName(state.conversation, state.options);
+  }
+
+  function renderTurn(turn, index) {
     const li = document.createElement("li");
     li.className = `turn ${turn.role}`;
     li.dataset.index = index;
@@ -137,17 +140,16 @@
     const box = document.createElement("input");
     box.type = "checkbox";
     box.tabIndex = -1;
-    box.setAttribute("aria-label", `Include ${turn.role === "user" ? "request" : "response"} ${requestNo}`);
 
     const meta = document.createElement("div");
     meta.className = "meta";
     const role = document.createElement("span");
     role.className = "role";
-    role.textContent = turn.role === "user" ? `Request ${requestNo}` : "Response";
+    role.textContent = speaker(turn);
     meta.appendChild(role);
 
     const counts = countBlocks(turn);
-    if (counts.tools) meta.appendChild(chip(`${counts.tools} tool${counts.tools > 1 ? "s" : ""}`));
+    if (counts.tools) meta.appendChild(chip("used tools"));
     if (counts.thinking) meta.appendChild(chip("thinking"));
     if (counts.code) meta.appendChild(chip("code"));
     if (counts.attachments) meta.appendChild(chip(`📎 ${counts.attachments}`));
@@ -159,13 +161,14 @@
       e.stopPropagation();
       if (state.expanded.has(turn.id)) state.expanded.delete(turn.id);
       else state.expanded.add(turn.id);
-      li.replaceWith(renderTurn(turn, index, requestNo));
+      li.replaceWith(renderTurn(turn, index));
     });
     meta.appendChild(expand);
 
     const snippet = document.createElement("div");
     snippet.className = "snippet";
     snippet.textContent = turnSnippet(turn) || "(no text)";
+    box.setAttribute("aria-label", `Include ${speaker(turn)}: ${snippet.textContent.slice(0, 60)}`);
 
     li.append(box, meta, document.createElement("span"), snippet);
 
@@ -215,7 +218,7 @@
 
   function updateCount() {
     const n = state.selected.size;
-    $("count").textContent = `${n} of ${state.turns.length} selected`;
+    $("count").textContent = `${n} of ${state.turns.length} included`;
     for (const id of ["copy-btn", "download-btn", "preview-btn"]) $(id).disabled = n === 0;
   }
 
@@ -315,6 +318,9 @@
     try {
       const { options } = await chrome.storage.local.get("options");
       state.options = { ...DEFAULT_OPTIONS, ...(options || {}) };
+      // 0.1.0 stored its defaults; treat those as unset so the new names apply.
+      if (state.options.userLabel === "User") state.options.userLabel = DEFAULT_OPTIONS.userLabel;
+      if (state.options.assistantLabel === "Assistant") state.options.assistantLabel = DEFAULT_OPTIONS.assistantLabel;
     } catch {
       state.options = { ...DEFAULT_OPTIONS };
     }
@@ -332,7 +338,7 @@
     if (el.type === "text" && !v.trim()) v = DEFAULT_OPTIONS[el.dataset.opt];
     state.options[el.dataset.opt] = v;
     chrome.storage.local.set({ options: state.options });
-    if (state.conversation && state.expanded.size) render();
+    if (state.conversation && (state.expanded.size || el.type === "text")) render();
   }
 
   // ---------- wiring ----------

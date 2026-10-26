@@ -4,7 +4,7 @@
   "use strict";
 
   const { parseClaude, parseChatGPT } = window.ChatdownParsers;
-  const { DEFAULT_OPTIONS, groupTurns, turnSnippet, renderMarkdown, filenameFor } = window.ChatdownMarkdown;
+  const { DEFAULT_OPTIONS, assistantName, groupTurns, turnSnippet, renderMarkdown, filenameFor } = window.ChatdownMarkdown;
 
   // ---------- samples (shaped like each site's conversation API) ----------
 
@@ -85,6 +85,7 @@
     $("d-source").textContent = SOURCE[sample];
     $("d-title").textContent = state.conv.title;
     $("d-file").textContent = filenameFor(state.conv);
+    $("d-select-assistant").textContent = `${SOURCE[sample]}'s`;
     document.querySelectorAll("[data-sample]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.sample === sample)));
     renderTurns();
     renderOutput();
@@ -95,9 +96,7 @@
   function renderTurns() {
     const list = $("d-turns");
     list.textContent = "";
-    let n = 0;
     state.turns.forEach((turn, i) => {
-      if (turn.role === "user") n++;
       const li = document.createElement("li");
       li.className = `turn ${turn.role}`;
       li.dataset.index = i;
@@ -113,7 +112,7 @@
       meta.className = "meta";
       const role = document.createElement("span");
       role.className = "role";
-      role.textContent = turn.role === "user" ? `Request ${n}` : "Response";
+      role.textContent = turn.role === "user" ? DEFAULT_OPTIONS.userLabel : assistantName(state.conv, state.opts);
       meta.append(role, ...chips(turn));
 
       const snip = document.createElement("div");
@@ -148,7 +147,7 @@
       s.textContent = t;
       out.push(s);
     };
-    if (c.tool) chip(`${c.tool} tool${c.tool > 1 ? "s" : ""}`);
+    if (c.tool) chip("used tools");
     if (c.thinking) chip("thinking");
     if (c.code) chip("code");
     return out;
@@ -161,7 +160,7 @@
       li.querySelector("input").checked = on;
       li.setAttribute("aria-checked", String(on));
     }
-    $("d-count").textContent = `${state.selected.size} of ${state.turns.length} selected`;
+    $("d-count").textContent = `${state.selected.size} of ${state.turns.length} included`;
   }
 
   function toggle(i, range) {

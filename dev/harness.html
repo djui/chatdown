@@ -101,17 +101,19 @@ print(list(reversed(xs)))</code></div></pre>
 
       // Mount the real panel markup, stylesheet and scripts into this page.
       (async () => {
-        const html = await (await fetch("../src/panel/panel.html")).text();
+        // Cache-busted so edits show up on a plain reload.
+        const bust = `?v=${Date.now()}`;
+        const html = await (await fetch("../src/panel/panel.html", { cache: "no-store" })).text();
         const doc = new DOMParser().parseFromString(html, "text/html");
         const css = document.createElement("link");
         css.rel = "stylesheet";
-        css.href = "../src/panel/panel.css";
+        css.href = "../src/panel/panel.css" + bust;
         document.head.appendChild(css);
         for (const n of [...doc.body.children]) if (n.tagName !== "SCRIPT") document.body.appendChild(n);
         for (const src of ["../src/shared/markdown.js", "../src/panel/panel.js"]) {
           await new Promise((res) => {
             const s = document.createElement("script");
-            s.src = src;
+            s.src = src + bust;
             s.onload = res;
             document.body.appendChild(s);
           });

@@ -16,7 +16,7 @@
   .brand { display: flex; align-items: center; gap: 12px; font-size: 26px; font-weight: 650; letter-spacing: -0.02em; }
   .brand img { width: 40px; height: 40px; border-radius: 9px; }
   h1 { margin: 54px 0 0; font-size: 72px; line-height: 1.02; letter-spacing: -0.045em; font-weight: 750; }
-  .md { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: #2f6feb; font-weight: 600; letter-spacing: -0.06em; }
+  .md { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: #0a66e0; font-weight: 600; letter-spacing: -0.06em; }
   .md i { font-style: normal; opacity: 0.35; font-weight: 400; }
   p { margin: 30px 0 0; font-size: 24px; line-height: 1.4; color: #45464c; letter-spacing: -0.01em; }
   .sites { display: flex; gap: 10px; margin-top: 34px; }
@@ -30,41 +30,39 @@
   .bar { display: flex; gap: 8px; padding: 14px 16px; background: #efeee9; border-bottom: 1px solid rgba(20,20,30,.08); }
   .bar i { width: 12px; height: 12px; border-radius: 50%; background: rgba(20,20,30,.16); }
   .turns { padding: 16px; display: grid; gap: 9px; border-bottom: 1px solid rgba(20,20,30,.08); }
-  .t { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 9px; background: #efeee9; border-left: 4px solid #1f8a5b; font-size: 16px; }
-  .t.u { border-left-color: #7a4fd6; }
-  .t.off { opacity: .4; background: transparent; border: 1px solid rgba(20,20,30,.1); border-left: 4px solid #1f8a5b; }
-  .t.u.off { border-left-color: #7a4fd6; }
-  .t b { font-size: 13px; color: #1f8a5b; width: 76px; }
-  .t.u b { color: #7a4fd6; }
-  .box { width: 16px; height: 16px; border-radius: 4px; background: #2f6feb; position: relative; flex: none; }
+  .t { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 9px; background: #fff; border: 1px solid rgba(20,20,30,.1); font-size: 16px; }
+  .t.u { background: #efeee9; border-color: transparent; }
+  .t.off { opacity: .4; }
+  .t b { font-size: 13px; color: #17181b; width: 52px; }
+  .box { width: 16px; height: 16px; border-radius: 4px; background: #0a66e0; position: relative; flex: none; }
   .box::after { content: ""; position: absolute; left: 5px; top: 2px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
   .off .box { background: none; border: 1.5px solid rgba(20,20,30,.3); }
   .off .box::after { display: none; }
   pre { margin: 0; padding: 16px 20px 20px; background: #fbfaf7; font: 15px/1.6 ui-monospace, "SF Mono", Menlo, monospace; color: #45464c; }
-  .h { color: #1f4fb8; font-weight: 700; } .c { color: #2c6b4e; } .f { color: #9a9ba1; }
+  .h { color: #17181b; font-weight: 700; } .c { color: #17181b; } .f { color: #9a9ba1; }
 </style>
 </head>
 <body>
   <div>
     <div class="brand"><img src="../icons/icon128.png" alt=""> Chatdown</div>
     <h1>Your AI chats,<br>as clean <span class="md"><i>**</i>Markdown<i>**</i></span>.</h1>
-    <p>Export conversations to Markdown and pick exactly which requests and responses to keep.</p>
+    <p>Export conversations to Markdown and pick exactly which messages to keep.</p>
     <div class="sites"><span>ChatGPT</span><span>Codex</span><span>Claude</span><span>Claude Code</span></div>
   </div>
   <div class="card">
     <div class="bar"><i></i><i></i><i></i></div>
     <div class="turns">
-      <div class="t u"><span class="box"></span><b>Request 1</b>Debounce or throttle?</div>
-      <div class="t"><span class="box"></span><b>Response</b>Debounce. Wait for a quiet gap…</div>
-      <div class="t u off"><span class="box"></span><b>Request 2</b>Hmm, try again?</div>
-      <div class="t off"><span class="box"></span><b>Response</b>Sure! Here's another take…</div>
+      <div class="t u"><span class="box"></span><b>You</b>Debounce or throttle?</div>
+      <div class="t"><span class="box"></span><b>Claude</b>Debounce. Wait for a quiet gap…</div>
+      <div class="t u off"><span class="box"></span><b>You</b>Hmm, try again?</div>
+      <div class="t off"><span class="box"></span><b>Claude</b>Sure! Here's another take…</div>
     </div>
 <pre><span class="h"># Debouncing a search box</span>
 
-<span class="h">## User</span>
+<span class="h">## You</span>
 Debounce or throttle?
 
-<span class="h">## Assistant</span>
+<span class="h">## Claude</span>
 <b>**Debounce.**</b> Wait for a quiet gap:
 <span class="f">```ts</span>
 <span class="c">const run = debounce(search, 250);</span>
