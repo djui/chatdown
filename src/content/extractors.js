@@ -125,6 +125,15 @@
     return t;
   }
 
+  // The rendered message elements, in page order, from the first strategy that finds any.
+  function domMessages(source) {
+    for (const strategy of DOM_STRATEGIES[source] || []) {
+      const found = strategy().filter((x) => x.el);
+      if (found.length) return found;
+    }
+    return [];
+  }
+
   function viaDom(source) {
     for (const strategy of DOM_STRATEGIES[source] || []) {
       const found = strategy().filter((x) => x.el);
@@ -168,5 +177,5 @@
     return { conversation: viaDom(site.source), method: "dom", warnings };
   }
 
-  root.ChatdownExtractors = { detectSite, extract };
+  root.ChatdownExtractors = { detectSite, extract, domMessages };
 })(typeof globalThis !== "undefined" ? globalThis : this);

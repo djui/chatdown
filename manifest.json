@@ -39,7 +39,8 @@
         "src/content/html2md.js",
         "src/content/parsers.js",
         "src/content/extractors.js",
-        "src/content/content.js"
+        "src/content/content.js",
+        "src/content/onpage.js"
       ],
       "run_at": "document_idle"
     }

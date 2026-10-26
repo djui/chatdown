@@ -1,0 +1,89 @@
+<!doctype html>
+<!--
+  Dev mock: a ChatGPT-like conversation with the on-page checkboxes running,
+  driven by a stand-in for the side panel.
+    python3 -m http.server 8765   (from the repo root)
+    http://localhost:8765/dev/page-mock.html              ChatGPT-style page (ids)
+    http://localhost:8765/dev/page-mock.html?site=claude  Claude-style page (by position)
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chatdown page mock</title>
+    <style>
+      body { margin: 0; font: 16px/1.6 system-ui, sans-serif; background: #fff; color: #222; }
+      main { max-width: 680px; margin: 0 auto; padding: 32px 24px 200px; }
+      [data-message-author-role="user"], [data-testid="user-message"] { background: #f2f2f2; border-radius: 18px; padding: 10px 16px; margin: 24px 0 24px 25%; }
+      .bot { margin: 24px 0; }
+      pre { background: #f6f6f6; padding: 12px; border-radius: 8px; }
+      #log { position: fixed; right: 8px; bottom: 8px; font: 12px monospace; background: #222; color: #9f9; padding: 6px 8px; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <main id="chat"></main>
+    <div id="log">panel: waiting</div>
+
+    <script>
+      const site = new URLSearchParams(location.search).get("site") || "chatgpt";
+      const msgs = [
+        ["u1", "user", "How do I reverse a list in Python?"],
+        ["a1", "assistant", "<p>Use slicing:</p><pre>xs[::-1]</pre><p>or <code>reversed(xs)</code>.</p>"],
+        ["u2", "user", "Which one is faster?"],
+        ["a2", "assistant", "<p>For a full copy, slicing is usually faster. " + "It allocates the new list in one go. ".repeat(12) + "</p>"],
+        ["u3", "user", "Thanks!"],
+        ["a3", "assistant", "<p>You're welcome.</p>"],
+      ];
+      const chat = document.getElementById("chat");
+      for (const [id, role, html] of msgs) {
+        const el = document.createElement("div");
+        if (site === "chatgpt") {
+          el.setAttribute("data-message-author-role", role);
+          el.setAttribute("data-message-id", id);
+          el.className = role === "assistant" ? "bot" : "";
+          el.innerHTML = role === "assistant" ? `<div class="markdown">${html}</div>` : `<div class="whitespace-pre-wrap">${html}</div>`;
+        } else if (role === "user") {
+          el.setAttribute("data-testid", "user-message");
+          el.textContent = html;
+        } else {
+          el.className = "bot font-claude-response";
+          el.innerHTML = html;
+        }
+        chat.appendChild(el);
+      }
+
+      // Stand-in for chrome.runtime.onConnect; the "panel" below plays the side panel.
+      let onConnect;
+      window.chrome = { runtime: { onConnect: { addListener: (fn) => (onConnect = fn) } } };
+    </script>
+    <script src="../src/content/html2md.js"></script>
+    <script src="../src/content/parsers.js"></script>
+    <script src="../src/content/extractors.js"></script>
+    <script src="../src/content/onpage.js"></script>
+    <script>
+      ChatdownExtractors.detectSite = () => ({ source: site, id: null });
+
+      const turns = msgs.map(([id, role]) => ({ id, role, messageIds: [id] }));
+      const selected = new Set(turns.map((t) => t.id).filter((id) => id !== "u3" && id !== "a3"));
+      const log = (t) => (document.getElementById("log").textContent = `panel: ${t}`);
+      const listeners = { msg: null, gone: null };
+      const port = {
+        name: "chatdown-marks",
+        onMessage: { addListener: (fn) => (listeners.msg = fn) },
+        onDisconnect: { addListener: (fn) => (listeners.gone = fn) },
+        postMessage(msg) {
+          if (msg.type === "toggle") {
+            selected.has(msg.id) ? selected.delete(msg.id) : selected.add(msg.id);
+            send();
+          }
+          log(`${msg.type} ${msg.id || ""}${msg.type === "status" ? `${msg.matched}/${msg.total}` : ""} · ${selected.size}/${turns.length} included`);
+        },
+        disconnect() {},
+      };
+      const send = () => listeners.msg({ type: "marks", turns: turns.map((t) => ({ ...t, selected: selected.has(t.id) })) });
+      onConnect(port);
+      send();
+      window.closePanel = () => listeners.gone();
+    </script>
+  </body>
+</html>
