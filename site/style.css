@@ -229,6 +229,18 @@ section { padding: clamp(56px, 9vw, 104px) 0; }
   border: 1px solid var(--rule-strong); border-radius: 6px; padding: 4px 10px;
 }
 .mini:hover { border-color: var(--ink-3); }
+.fmt { display: flex; }
+.fmt button {
+  font: 550 12px var(--font); color: var(--ink-2); background: none; cursor: pointer;
+  border: 1px solid var(--rule-strong); padding: 3px 8px; margin-left: -1px;
+}
+.fmt button:first-child { border-radius: 6px 0 0 6px; margin-left: 0; }
+.fmt button:last-child { border-radius: 0 6px 6px 0; }
+.fmt button[aria-pressed="true"] { background: var(--surface); color: var(--ink); }
+.html-out { flex: 1; width: 100%; min-height: 0; border: 0; background: #fff; }
+@media (max-width: 860px) { .html-out { height: 460px; flex: none; } }
+@media (max-width: 640px) { .output-head .file { display: none; } .output-head .fmt { margin-right: auto; } }
+@media (max-width: 1180px) { .stats { display: none; } .file { margin-right: auto; } }
 .md-out {
   flex: 1; margin: 0; padding: 16px 18px 28px; overflow: auto; min-height: 0;
   font: 12.5px/1.6 var(--mono); color: var(--ink-2); white-space: pre-wrap; word-break: break-word; tab-size: 2;

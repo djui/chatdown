@@ -1,6 +1,6 @@
 # Chatdown
 
-Chrome extension that exports ChatGPT, Codex, Claude and Claude Code conversations to Markdown, letting you pick exactly which messages to include.
+Chrome extension that exports ChatGPT, Codex, Claude and Claude Code conversations to Markdown (or HTML, PDF, plain text and JSON), letting you pick exactly which messages to include.
 
 **[Website and live demo](https://djui.github.io/chatdown/)** · **[Download](https://github.com/djui/chatdown/releases/latest)**
 
@@ -21,7 +21,8 @@ Works in Chrome and other Chromium browsers (Edge, Brave, Arc).
 - Quick selects: **All**, **None**, **Yours**, the AI's answers, **Invert**.
 - **Show** previews a single turn as Markdown.
 - **Options**: thinking, tool use (optionally folded into `<details>`), times and model, note properties (YAML front matter), and speaker names (default: "You" and the site's name). Options persist.
-- **Preview**, **Copy** or **Download .md**.
+- Pick a format: **Markdown**, **HTML** (one self-contained page), **PDF** (opens Chrome's print dialog; choose *Save as PDF*), **Plain text** or **JSON**.
+- **Preview**, **Copy** or **Download**. In HTML and PDF mode, Copy puts formatted text on the clipboard for pasting into Docs, Notion or mail.
 
 ## How it reads conversations
 
@@ -46,6 +47,9 @@ src/content/html2md.js    rendered DOM → Markdown (fallback)
 src/content/extractors.js site detection, API fetch, DOM strategies
 src/content/content.js    message handler for the panel
 src/shared/markdown.js    turn grouping + Markdown rendering (pure)
+src/shared/md2html.js     Markdown → safe HTML (escapes everything, http(s)/mailto links only)
+src/shared/formats.js     HTML, PDF, plain text and JSON exports
+src/print/                print page used for PDF
 src/panel/                side panel UI
 dev/harness.html          panel in a normal tab with stubbed chrome.* and sample data
 dev/og.html               source of the social preview image

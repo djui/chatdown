@@ -92,11 +92,16 @@ print(list(reversed(xs)))</code></div></pre>
             warnings: mode === "dom" ? ["API export failed (harness); used page content instead."] : [],
             conversation: mode === "dom" ? domConversation() : apiConversation(),
           }),
+          create: async ({ url }) => console.log("tabs.create", url),
           onActivated: { addListener() {} },
           onUpdated: { addListener() {} },
         },
         scripting: { executeScript: async () => {} },
-        storage: { local: { get: async (k) => ({ [k]: store[k] }), set: async (o) => Object.assign(store, o) } },
+        storage: {
+          local: { get: async (k) => ({ [k]: store[k] }), set: async (o) => Object.assign(store, o) },
+          session: { get: async (k) => ({ [k]: store[k] }), set: async (o) => Object.assign(store, o), remove: async (k) => delete store[k] },
+        },
+        runtime: { getURL: (p) => `../${p}` },
       };
 
       // Mount the real panel markup, stylesheet and scripts into this page.
@@ -110,7 +115,7 @@ print(list(reversed(xs)))</code></div></pre>
         css.href = "../src/panel/panel.css" + bust;
         document.head.appendChild(css);
         for (const n of [...doc.body.children]) if (n.tagName !== "SCRIPT") document.body.appendChild(n);
-        for (const src of ["../src/shared/markdown.js", "../src/panel/panel.js"]) {
+        for (const src of ["../src/shared/markdown.js", "../src/shared/md2html.js", "../src/shared/formats.js", "../src/panel/panel.js"]) {
           await new Promise((res) => {
             const s = document.createElement("script");
             s.src = src + bust;

@@ -56,6 +56,16 @@
         </div>
       </details>
       <div class="actions">
+        <label class="format">
+          <span class="sr-only">Format</span>
+          <select id="format" aria-label="Export format">
+            <option value="markdown">Markdown</option>
+            <option value="html">HTML</option>
+            <option value="pdf">PDF</option>
+            <option value="text">Plain text</option>
+            <option value="json">JSON</option>
+          </select>
+        </label>
         <button id="preview-btn">Preview</button>
         <button id="copy-btn">Copy</button>
         <button id="download-btn" class="primary">Download .md</button>
@@ -64,15 +74,18 @@
 
     <dialog id="preview">
       <form method="dialog" class="preview-head">
-        <strong>Markdown preview</strong>
+        <strong id="preview-title">Preview</strong>
         <button value="close" class="icon" aria-label="Close">✕</button>
       </form>
       <textarea id="preview-text" readonly spellcheck="false"></textarea>
+      <iframe id="preview-frame" title="Export preview" sandbox hidden></iframe>
     </dialog>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script src="../shared/markdown.js"></script>
+    <script src="../shared/md2html.js"></script>
+    <script src="../shared/formats.js"></script>
     <script src="panel.js"></script>
   </body>
 </html>
