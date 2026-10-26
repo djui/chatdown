@@ -9,17 +9,11 @@
   --ink-3: #6a6b72;
   --rule: rgba(20, 20, 30, 0.1);
   --rule-strong: rgba(20, 20, 30, 0.18);
-  --accent: #2f6feb;
+  --accent: #0a66e0;
   --accent-ink: #ffffff;
-  --accent-soft: rgba(47, 111, 235, 0.1);
-  --user: #7a4fd6;
-  --asst: #1f8a5b;
+  --accent-soft: rgba(10, 102, 224, 0.1);
+  --mine: #efeee9;
   --code-bg: #fbfaf7;
-  --hl-head: #1f4fb8;
-  --hl-mark: #8a4fd6;
-  --hl-fm: #8a6100;
-  --hl-tag: #a03d5c;
-  --hl-code: #2c6b4e;
   --shadow: 0 1px 0 rgba(0, 0, 0, 0.03), 0 30px 70px -30px rgba(30, 30, 60, 0.35), 0 6px 18px -8px rgba(30, 30, 60, 0.14);
 
   --max: 1180px;
@@ -42,17 +36,11 @@
     --ink-3: #8e8f97;
     --rule: rgba(255, 255, 255, 0.09);
     --rule-strong: rgba(255, 255, 255, 0.16);
-    --accent: #5b93ff;
+    --accent: #3d8bff;
     --accent-ink: #0b1020;
-    --accent-soft: rgba(91, 147, 255, 0.14);
-    --user: #b292ff;
-    --asst: #4cc58e;
+    --accent-soft: rgba(61, 139, 255, 0.16);
+    --mine: #26272b;
     --code-bg: #16171a;
-    --hl-head: #8cb4ff;
-    --hl-mark: #c9a8ff;
-    --hl-fm: #e2b85c;
-    --hl-tag: #f28ba8;
-    --hl-code: #7fd3a8;
     --shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 40px 80px -30px rgba(0, 0, 0, 0.75);
   }
 }
@@ -206,17 +194,16 @@ section { padding: clamp(56px, 9vw, 104px) 0; }
 .turns { list-style: none; margin: 0; padding: 0 14px 10px; display: flex; flex-direction: column; gap: 6px; overflow: auto; flex: 1; min-height: 0; }
 .turn {
   display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 8px; padding: 8px 10px;
-  border: 1px solid var(--rule); border-left: 3px solid var(--asst); border-radius: 7px;
-  background: var(--well); cursor: pointer; user-select: none;
+  border: 1px solid var(--rule); border-radius: 8px;
+  background: var(--surface); cursor: pointer; user-select: none;
   transition: opacity 0.15s, background 0.15s;
 }
-.turn.user { border-left-color: var(--user); }
-.turn.off { opacity: 0.45; background: transparent; }
+.turn.user { background: var(--mine); border-color: transparent; }
+.turn.off { opacity: 0.45; }
 .turn:hover { border-color: var(--rule-strong); }
 .turn input { margin: 2px 0 0; accent-color: var(--accent); pointer-events: none; }
 .turn .meta { display: flex; gap: 6px; align-items: center; font-size: 11px; color: var(--ink-3); flex-wrap: wrap; }
-.turn .role { font-weight: 650; color: var(--asst); }
-.turn.user .role { color: var(--user); }
+.turn .role { font-weight: 650; color: var(--ink); }
 .turn .chip { border: 1px solid var(--rule-strong); border-radius: 999px; padding: 0 6px; }
 .turn .snippet {
   grid-column: 2; color: var(--ink); line-height: 1.45;
@@ -246,13 +233,13 @@ section { padding: clamp(56px, 9vw, 104px) 0; }
   flex: 1; margin: 0; padding: 16px 18px 28px; overflow: auto; min-height: 0;
   font: 12.5px/1.6 var(--mono); color: var(--ink-2); white-space: pre-wrap; word-break: break-word; tab-size: 2;
 }
-.md-out .h { color: var(--hl-head); font-weight: 700; }
+.md-out .h { color: var(--ink); font-weight: 700; }
 .md-out .b { color: var(--ink); font-weight: 700; }
-.md-out .fm { color: var(--hl-fm); }
-.md-out .tag { color: var(--hl-tag); }
+.md-out .fm { color: var(--ink-3); }
+.md-out .tag { color: var(--ink-3); }
 .md-out .fence { color: var(--ink-3); }
-.md-out .code { color: var(--hl-code); }
-.md-out .ic { color: var(--hl-mark); }
+.md-out .code { color: var(--ink); }
+.md-out .ic { color: var(--accent); }
 .md-out .q { color: var(--ink-3); font-style: italic; }
 .md-out .hr { color: var(--ink-3); }
 
@@ -288,7 +275,7 @@ tbody th { font-weight: 650; white-space: nowrap; }
 td code { white-space: nowrap; }
 td { color: var(--ink-2); }
 .pill { display: inline-block; font-size: 12px; font-weight: 650; padding: 2px 8px; border-radius: 999px; margin-right: 6px; color: var(--ink); }
-.pill.full { background: color-mix(in srgb, var(--asst) 18%, transparent); }
+.pill.full { background: var(--accent-soft); color: var(--accent); }
 .pill.page { background: var(--well); border: 1px solid var(--rule-strong); }
 .fine { margin-top: 16px; color: var(--ink-3); font-size: 14.5px; max-width: 760px; }
 .fine strong { color: var(--ink-2); }

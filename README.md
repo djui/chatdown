@@ -1,6 +1,6 @@
 # Chatdown
 
-Chrome extension that exports ChatGPT, Codex, Claude and Claude Code conversations to Markdown, with per-turn selection of which requests and responses to include.
+Chrome extension that exports ChatGPT, Codex, Claude and Claude Code conversations to Markdown, letting you pick exactly which messages to include.
 
 **[Website and live demo](https://djui.github.io/chatdown/)** · **[Download](https://github.com/djui/chatdown/releases/latest)**
 
@@ -17,10 +17,10 @@ Works in Chrome and other Chromium browsers (Edge, Brave, Arc).
 
 ## Use
 
-- Every request and response is listed as a card. Click to include or exclude it, and Shift-click to toggle a range.
-- Quick selects: **All**, **None**, **Requests**, **Responses**, **Invert**.
+- Every message is listed as a card. Click one to leave it out, and Shift-click to pick several at once.
+- Quick selects: **All**, **None**, **Yours**, the AI's answers, **Invert**.
 - **Show** previews a single turn as Markdown.
-- **Options**: thinking, tool calls and results (optionally collapsed in `<details>`), timestamps and model, YAML front matter, speaker style and labels. Options persist.
+- **Options**: thinking, tool use (optionally folded into `<details>`), times and model, note properties (YAML front matter), and speaker names (default: "You" and the site's name). Options persist.
 - **Preview**, **Copy** or **Download .md**.
 
 ## How it reads conversations

@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { groupTurns, renderMarkdown, filenameFor, fence } = require("../src/shared/markdown.js");
+const { groupTurns, turnSnippet, renderMarkdown, filenameFor, fence } = require("../src/shared/markdown.js");
 
 const conversation = {
   source: "chatgpt",
@@ -30,7 +30,20 @@ test("groupTurns folds consecutive non-user messages into one response", () => {
 test("renderMarkdown includes only selected turns and hides tools/thinking by default", () => {
   const turns = groupTurns(conversation.messages);
   const md = renderMarkdown(conversation, turns, ["u1", "a1"], { frontMatter: false });
-  assert.equal(md, "# Sorting: a quick look\n\n## User\n\nSort [3,1,2]\n\n## Assistant\n\nResult: `[1, 2, 3]`\n");
+  assert.equal(md, "# Sorting: a quick look\n\n## You\n\nSort [3,1,2]\n\n## ChatGPT\n\nResult: `[1, 2, 3]`\n");
+});
+
+test("assistant name follows the site unless renamed", () => {
+  const turns = groupTurns(conversation.messages);
+  const claude = renderMarkdown({ ...conversation, source: "claude" }, turns, ["a1"], { frontMatter: false });
+  assert.match(claude, /^## Claude$/m);
+  const renamed = renderMarkdown(conversation, turns, ["a1"], { frontMatter: false, assistantLabel: "Bot" });
+  assert.match(renamed, /^## Bot$/m);
+});
+
+test("previews leave out tool names", () => {
+  const [, response] = groupTurns(conversation.messages);
+  assert.equal(turnSnippet(response), "Result: [1, 2, 3]");
 });
 
 test("renderMarkdown renders tools and thinking in details when enabled", () => {

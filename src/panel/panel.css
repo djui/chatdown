@@ -3,13 +3,12 @@
   --fg: #1d1d1f;
   --muted: #6e6e73;
   --line: #e3e3e8;
-  --card: #f7f7f9;
-  --card-off: #ffffff;
-  --accent: #2f6feb;
+  --card: #f4f4f6;
+  --mine: #f0f0f3;
+  --answer: #ffffff;
+  --accent: #0a66e0;
   --accent-fg: #ffffff;
-  --user: #7a4fd6;
-  --assistant: #1f8a5b;
-  --warn: #b26b00;
+  --warn: #9a5b00;
   color-scheme: light dark;
 }
 
@@ -20,10 +19,9 @@
     --muted: #98989f;
     --line: #38383c;
     --card: #2a2a2d;
-    --card-off: #1c1c1e;
-    --accent: #4c8dff;
-    --user: #b292ff;
-    --assistant: #4cc58e;
+    --mine: #2c2c2f;
+    --answer: #1c1c1e;
+    --accent: #3d8bff;
     --warn: #f0a83c;
   }
 }
@@ -196,26 +194,31 @@ main {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 4px 8px;
-  padding: 8px;
+  padding: 8px 10px;
   border: 1px solid var(--line);
-  border-left: 3px solid var(--assistant);
-  border-radius: 6px;
-  background: var(--card);
+  border-radius: 8px;
+  background: var(--answer);
   cursor: pointer;
   user-select: none;
+  transition: opacity 0.15s;
 }
 
 .turn.user {
-  border-left-color: var(--user);
+  background: var(--mine);
+  border-color: transparent;
 }
 
 .turn.off {
-  background: var(--card-off);
-  opacity: 0.55;
+  opacity: 0.45;
+}
+
+.turn:hover {
+  border-color: var(--muted);
 }
 
 .turn input {
   margin: 2px 0 0;
+  accent-color: var(--accent);
 }
 
 .turn .meta {
@@ -228,11 +231,7 @@ main {
 
 .turn .role {
   font-weight: 600;
-  color: var(--assistant);
-}
-
-.turn.user .role {
-  color: var(--user);
+  color: var(--fg);
 }
 
 .turn .chip {

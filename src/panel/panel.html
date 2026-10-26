@@ -25,13 +25,13 @@
         <div class="seg" role="group" aria-label="Quick select">
           <button data-select="all">All</button>
           <button data-select="none">None</button>
-          <button data-select="user">Requests</button>
-          <button data-select="assistant">Responses</button>
+          <button data-select="user">Yours</button>
+          <button data-select="assistant" id="select-assistant">Answers</button>
           <button data-select="invert">Invert</button>
         </div>
         <span id="count" class="count"></span>
       </div>
-      <p class="hint">Click to toggle · Shift-click to toggle a range</p>
+      <p class="hint">Click a message to leave it out. Shift-click to pick several at once.</p>
       <ol id="turns" class="turns"></ol>
     </main>
 
@@ -39,20 +39,20 @@
       <details id="options" class="options">
         <summary>Options</summary>
         <div class="opts">
-          <label><input type="checkbox" data-opt="includeThinking" /> Thinking</label>
-          <label><input type="checkbox" data-opt="includeTools" /> Tool calls &amp; results</label>
-          <label><input type="checkbox" data-opt="collapseDetails" /> Collapse in &lt;details&gt;</label>
-          <label><input type="checkbox" data-opt="includeTimestamps" /> Timestamps &amp; model</label>
-          <label><input type="checkbox" data-opt="frontMatter" /> YAML front matter</label>
+          <label title="The model's reasoning, where the site shows it"><input type="checkbox" data-opt="includeThinking" /> Thinking</label>
+          <label title="Web searches, code runs and their results"><input type="checkbox" data-opt="includeTools" /> Tool use</label>
+          <label title="Thinking and tool use start folded and open with a click"><input type="checkbox" data-opt="collapseDetails" /> Fold extras away</label>
+          <label><input type="checkbox" data-opt="includeTimestamps" /> Times and model</label>
+          <label title="Title, link and dates at the top, as note properties (YAML front matter)"><input type="checkbox" data-opt="frontMatter" /> Note properties</label>
           <label class="row">
-            Speaker
+            Names
             <select data-opt="headingStyle">
-              <option value="heading">## Heading</option>
-              <option value="bold">**Bold** + rule</option>
+              <option value="heading">As headings</option>
+              <option value="bold">In bold</option>
             </select>
           </label>
-          <label class="row">Request label <input type="text" data-opt="userLabel" /></label>
-          <label class="row">Response label <input type="text" data-opt="assistantLabel" /></label>
+          <label class="row">Your name <input type="text" data-opt="userLabel" /></label>
+          <label class="row">Assistant name <input type="text" data-opt="assistantLabel" id="assistant-label" /></label>
         </div>
       </details>
       <div class="actions">

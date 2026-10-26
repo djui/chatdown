@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Chatdown: AI chats to clean Markdown</title>
-  <meta name="description" content="Chatdown is a free Chrome extension that exports ChatGPT, Codex, Claude and Claude Code conversations to Markdown. Pick exactly which requests and responses to keep. Nothing leaves your browser.">
+  <meta name="description" content="Chatdown is a free Chrome extension that exports ChatGPT, Codex, Claude and Claude Code conversations to Markdown. Pick exactly which messages to keep. Nothing leaves your browser.">
   <link rel="canonical" href="https://djui.github.io/chatdown/">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
@@ -13,15 +13,15 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Chatdown">
   <meta property="og:title" content="Chatdown: AI chats to clean Markdown">
-  <meta property="og:description" content="Export ChatGPT, Codex, Claude and Claude Code conversations to Markdown. Pick exactly which requests and responses to keep.">
+  <meta property="og:description" content="Export ChatGPT, Codex, Claude and Claude Code conversations to Markdown. Pick exactly which messages to keep.">
   <meta property="og:url" content="https://djui.github.io/chatdown/">
   <meta property="og:image" content="https://djui.github.io/chatdown/assets/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Chatdown's side panel listing requests and responses, next to the Markdown it produces.">
+  <meta property="og:image:alt" content="Chatdown's side panel listing the messages of a chat, next to the Markdown it produces.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Chatdown: AI chats to clean Markdown">
-  <meta name="twitter:description" content="Export ChatGPT, Codex, Claude and Claude Code conversations to Markdown. Pick exactly which turns to keep.">
+  <meta name="twitter:description" content="Export ChatGPT, Codex, Claude and Claude Code conversations to Markdown. Pick exactly which messages to keep.">
   <meta name="twitter:image" content="https://djui.github.io/chatdown/assets/og.png">
 
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icon32.png">
@@ -33,7 +33,7 @@
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Chatdown",
-    "description": "Chrome extension that exports ChatGPT, Codex, Claude and Claude Code conversations to Markdown, with per-turn selection.",
+    "description": "Chrome extension that exports ChatGPT, Codex, Claude and Claude Code conversations to Markdown, with message-by-message selection.",
     "applicationCategory": "BrowserApplication",
     "operatingSystem": "Chrome, Chromium-based browsers",
     "url": "https://djui.github.io/chatdown/",
@@ -73,7 +73,7 @@
       <h1>Your AI chats,<br>as clean <span class="md">Markdown</span>.</h1>
       <p class="lede">
         Chatdown exports ChatGPT, Codex, Claude and Claude&nbsp;Code conversations to a tidy <code>.md</code> file.
-        You choose exactly which requests and responses go in, and whether thinking and tool calls come along.
+        You pick exactly which messages go in, and whether the AI's thinking and tool use come along.
       </p>
       <div class="ctas">
         <a class="btn primary" href="https://github.com/djui/chatdown/releases/latest" id="download">
@@ -92,7 +92,7 @@
     <div class="wrap">
       <div class="section-head">
         <h2 id="demo-title">Try it right here</h2>
-        <p>This is Chatdown's real export code running on two sample conversations. Click turns to include or exclude them, flip the options, and watch the Markdown change.</p>
+        <p>This is Chatdown's real export code running on two sample conversations. Click messages to leave them out, flip the options, and watch the Markdown change.</p>
       </div>
 
       <div class="window">
@@ -114,8 +114,8 @@
               <div class="seg" role="group" aria-label="Quick select">
                 <button data-select="all">All</button>
                 <button data-select="none">None</button>
-                <button data-select="user">Requests</button>
-                <button data-select="assistant">Responses</button>
+                <button data-select="user">Yours</button>
+                <button data-select="assistant" id="d-select-assistant">Answers</button>
               </div>
               <span class="count" id="d-count"></span>
             </div>
@@ -123,11 +123,11 @@
             <fieldset class="opts">
               <legend>Options</legend>
               <label><input type="checkbox" data-opt="includeThinking"> Thinking</label>
-              <label><input type="checkbox" data-opt="includeTools"> Tool calls</label>
-              <label><input type="checkbox" data-opt="collapseDetails" checked> Collapse</label>
-              <label><input type="checkbox" data-opt="includeTimestamps"> Timestamps</label>
-              <label><input type="checkbox" data-opt="frontMatter" checked> Front matter</label>
-              <label><input type="checkbox" data-opt="boldStyle"> Bold speakers</label>
+              <label><input type="checkbox" data-opt="includeTools"> Tool use</label>
+              <label><input type="checkbox" data-opt="collapseDetails" checked> Fold away</label>
+              <label><input type="checkbox" data-opt="includeTimestamps"> Times</label>
+              <label><input type="checkbox" data-opt="frontMatter" checked> Note properties</label>
+              <label><input type="checkbox" data-opt="boldStyle"> Names in bold</label>
             </fieldset>
           </div>
 
@@ -142,7 +142,7 @@
           </div>
         </div>
       </div>
-      <p class="demo-note">Click a turn to toggle it. Shift-click toggles a range.</p>
+      <p class="demo-note">Click a message to leave it out. Shift-click to pick several at once.</p>
     </div>
   </section>
 
@@ -160,7 +160,7 @@
         <li>
           <span class="step-n">2</span>
           <h3>Click the Chatdown icon</h3>
-          <p>The side panel lists every request and response as a card, with markers for tool calls, thinking, code and attachments.</p>
+          <p>The side panel lists every message in the chat, marking the ones with code, thinking, tool use or attachments.</p>
         </li>
         <li>
           <span class="step-n">3</span>
@@ -179,15 +179,15 @@
       </div>
       <div class="grid">
         <article>
-          <h3>Turn-by-turn selection</h3>
-          <p>Include or exclude any request or response. Quick filters keep only your prompts, only the answers, or everything.</p>
+          <h3>Keep only what matters</h3>
+          <p>Leave out any message. Quick filters keep only yours, only the answers, or everything.</p>
         </article>
         <article>
           <h3>Only the branch you see</h3>
           <p>Edited a prompt or regenerated an answer? Chatdown follows the branch that's on screen and skips the abandoned ones.</p>
         </article>
         <article>
-          <h3>Thinking &amp; tool calls, if you want them</h3>
+          <h3>Thinking and tool use, if you want them</h3>
           <p>Reasoning, searches, code runs and their results fold into collapsible <code>&lt;details&gt;</code> blocks, or are left out entirely.</p>
         </article>
         <article>
@@ -196,7 +196,7 @@
         </article>
         <article>
           <h3>Ready for your notes</h3>
-          <p>Optional YAML front matter (title, source, URL, model, dates) drops straight into Obsidian, a docs repo or a static site.</p>
+          <p>Optional note properties (title, source, link, model, dates, as YAML front matter) drop straight into Obsidian, a docs repo or a static site.</p>
         </article>
         <article>
           <h3>Nothing leaves your browser</h3>
@@ -224,7 +224,7 @@
           </tbody>
         </table>
       </div>
-      <p class="fine"><strong>Full export</strong> includes thinking, tool calls and results, artifacts and attachments. <strong>From the page</strong> captures the visible text, code, lists, tables, links and math. The panel always tells you which one it used.</p>
+      <p class="fine"><strong>Full export</strong> includes the AI's thinking, tool use, artifacts and attachments. <strong>From the page</strong> captures the visible text, code, lists, tables, links and math. The panel always tells you which one it used.</p>
     </div>
   </section>
 
