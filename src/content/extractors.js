@@ -67,36 +67,67 @@
 
   // ---------- DOM extractors ----------
 
-  // Each strategy returns [{ role, el }] in document order, or [] if it doesn't apply.
+  // Each strategy returns [{ role, el, box?, ids? }] in document order, or [] if it
+  // doesn't apply: el holds the message content, box the whole message on screen,
+  // ids the message ids the page exposes (matching the API's, where it has them).
+  // Sites change their markup; the current layout comes first, older ones after.
   const DOM_STRATEGIES = {
-    chatgpt: [
-      () =>
-        [...document.querySelectorAll("[data-message-author-role]")].map((el) => ({
-          role: el.getAttribute("data-message-author-role"),
-          el: el.querySelector(".markdown") || el.querySelector(".whitespace-pre-wrap") || el,
-        })),
-    ],
-    claude: [claudeDom],
+    chatgpt: [chatgptDom, chatgptLegacyDom],
+    claude: [claudeDom, claudeLegacyDom],
     // Codex and Claude Code reuse their chat components in places; try those first,
     // then fall back to role-tagged elements, then the whole main pane.
-    codex: [
-      () =>
-        [...document.querySelectorAll("[data-message-author-role]")].map((el) => ({
-          role: el.getAttribute("data-message-author-role"),
-          el: el.querySelector(".markdown") || el,
-        })),
-      roleTagged,
-      mainPane,
-    ],
-    "claude-code": [claudeDom, roleTagged, mainPane],
+    codex: [chatgptDom, chatgptLegacyDom, roleTagged, mainPane],
+    "claude-code": [claudeDom, claudeLegacyDom, roleTagged, mainPane],
   };
 
+  function outermost(all) {
+    return all.filter((el) => !all.some((other) => other !== el && other.contains(el)));
+  }
+
+  // ChatGPT since late 2026: user bubbles and answers carry their own markers.
+  function chatgptDom() {
+    const all = [...document.querySelectorAll("[data-user-message-bubble], [data-chatgpt-selection-message-id]")];
+    return outermost(all).map((el) => {
+      if (el.matches("[data-user-message-bubble]")) {
+        const holder = el.closest("[data-chatgpt-search-message-ids]");
+        const ids = holder ? holder.getAttribute("data-chatgpt-search-message-ids").split(/[\s,]+/).filter(Boolean) : [];
+        return { role: "user", el: el.querySelector(".whitespace-pre-wrap") || el, box: el, ids };
+      }
+      const content = el.querySelector('[class*="MarkdownRoot"], .markdown') || el;
+      return { role: "assistant", el: content, box: el, ids: [el.getAttribute("data-chatgpt-selection-message-id")] };
+    });
+  }
+
+  function chatgptLegacyDom() {
+    return [...document.querySelectorAll("[data-message-author-role]")].map((el) => {
+      const id = el.getAttribute("data-message-id");
+      return {
+        role: el.getAttribute("data-message-author-role"),
+        el: el.querySelector(".markdown") || el.querySelector(".whitespace-pre-wrap") || el,
+        box: el,
+        ids: id ? [id] : [],
+      };
+    });
+  }
+
+  // Claude since late 2026: one transcript row per message.
   function claudeDom() {
+    return [...document.querySelectorAll('[data-testid="transcript-row"]')]
+      .map((row) => {
+        const user = row.querySelector('[data-testid="user-message"]');
+        if (user) return { role: "user", el: user, box: row };
+        const reply = row.querySelector("[data-is-streaming]") || row.querySelector(".standard-markdown");
+        return reply ? { role: "assistant", el: reply, box: row } : null;
+      })
+      .filter(Boolean);
+  }
+
+  function claudeLegacyDom() {
     const sel = '[data-testid="user-message"], .font-claude-response, .font-claude-message';
-    const all = [...document.querySelectorAll(sel)];
-    return all
-      .filter((el) => !all.some((other) => other !== el && other.contains(el)))
-      .map((el) => ({ role: el.matches('[data-testid="user-message"]') ? "user" : "assistant", el }));
+    return outermost([...document.querySelectorAll(sel)]).map((el) => ({
+      role: el.matches('[data-testid="user-message"]') ? "user" : "assistant",
+      el,
+    }));
   }
 
   function roleTagged() {
@@ -105,9 +136,7 @@
         '[data-role="user"], [data-role="assistant"], [data-testid*="user-message" i], [data-testid*="assistant-message" i], [data-testid*="agent-message" i]'
       ),
     ];
-    return all
-      .filter((el) => !all.some((other) => other !== el && other.contains(el)))
-      .map((el) => {
+    return outermost(all).map((el) => {
         const tag = (el.getAttribute("data-role") || el.getAttribute("data-testid") || "").toLowerCase();
         return { role: tag.includes("user") ? "user" : "assistant", el };
       });

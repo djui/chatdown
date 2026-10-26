@@ -35,16 +35,15 @@
     const site = X && X.detectSite(location);
     if (!site) return [];
     const groups = [];
-    for (const { role, el } of X.domMessages(site.source)) {
-      const box = el.closest("[data-message-author-role]") || el;
+    for (const { role, el, box, ids } of X.domMessages(site.source)) {
       const r = role === "user" ? "user" : "assistant";
-      const id = box.getAttribute("data-message-id");
+      const found = (ids || []).filter(Boolean);
       const last = groups[groups.length - 1];
       if (last && r === "assistant" && last.role === "assistant") {
-        last.els.push(box);
-        if (id) last.ids.push(id);
+        last.els.push(box || el);
+        last.ids.push(...found);
       } else {
-        groups.push({ role: r, els: [box], ids: id ? [id] : [] });
+        groups.push({ role: r, els: [box || el], ids: found });
       }
     }
     return groups;
@@ -171,13 +170,23 @@
     const live = new Set();
     const selected = new Map(turns.map((t) => [t.id, t.selected]));
     const tint = veilColor();
-    for (const { id, els } of matches) {
-      const rects = els.map((el) => el.getBoundingClientRect()).filter((r) => r.width || r.height);
-      if (!rects.length) continue;
-      const top = Math.min(...rects.map((r) => r.top));
-      const bottom = Math.max(...rects.map((r) => r.bottom));
-      const left = Math.min(...rects.map((r) => r.left));
-      const right = Math.max(...rects.map((r) => r.right));
+    const boxes = matches
+      .map(({ id, els }) => {
+        const rects = els.map((el) => el.getBoundingClientRect()).filter((r) => r.width || r.height);
+        if (!rects.length) return null;
+        return {
+          id,
+          top: Math.min(...rects.map((r) => r.top)),
+          bottom: Math.max(...rects.map((r) => r.bottom)),
+          left: Math.min(...rects.map((r) => r.left)),
+          right: Math.max(...rects.map((r) => r.right)),
+        };
+      })
+      .filter(Boolean);
+    // One column of checkboxes left of the conversation, even where your own
+    // messages are right-aligned bubbles.
+    const column = Math.max(4, Math.min(...boxes.map((b) => b.left)) - 34);
+    for (const { id, top, bottom, left, right } of boxes) {
       if (bottom < 0 || top > innerHeight) continue;
 
       live.add(id);
@@ -185,7 +194,7 @@
       const { mark, veil } = nodeFor(id);
       // Keep the checkbox in view while a long message scrolls past.
       const y = Math.min(Math.max(top + 2, 8), bottom - 26);
-      mark.style.left = `${Math.max(4, left - 34)}px`;
+      mark.style.left = `${column}px`;
       mark.style.top = `${y}px`;
       mark.style.display = "";
       mark.classList.toggle("on", on);
