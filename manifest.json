@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Chatdown",
   "version": "0.1.1",
-  "description": "Export ChatGPT, Codex and Claude conversations to Markdown. Pick which requests and responses to include.",
+  "description": "Export ChatGPT, Codex and Claude conversations to Markdown. Pick exactly which messages to keep.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
