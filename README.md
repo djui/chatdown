@@ -18,6 +18,7 @@ Works in Chrome and other Chromium browsers (Edge, Brave, Arc).
 ## Use
 
 - Every message is listed as a card. Click one to leave it out, and Shift-click to pick several at once.
+- While the panel is open, each message in the chat also gets a checkbox in the margin, synced with the panel (switch off under Options → *Checkboxes in the chat*). They are drawn in an overlay; the page itself is not modified.
 - Quick selects: **All**, **None**, **Yours**, the AI's answers, **Invert**.
 - **Show** previews a single turn as Markdown.
 - **Options**: thinking, tool use (optionally folded into `<details>`), times and model, note properties (YAML front matter), and speaker names (default: "You" and the site's name). Options persist.
@@ -46,6 +47,7 @@ src/content/parsers.js    provider API JSON → normalized conversation (pure)
 src/content/html2md.js    rendered DOM → Markdown (fallback)
 src/content/extractors.js site detection, API fetch, DOM strategies
 src/content/content.js    message handler for the panel
+src/content/onpage.js     checkboxes in the chat, synced with the panel over a port
 src/shared/markdown.js    turn grouping + Markdown rendering (pure)
 src/shared/md2html.js     Markdown → safe HTML (escapes everything, http(s)/mailto links only)
 src/shared/formats.js     HTML, PDF, plain text and JSON exports
@@ -53,6 +55,7 @@ src/print/                print page used for PDF
 src/panel/                side panel UI
 dev/harness.html          panel in a normal tab with stubbed chrome.* and sample data
 dev/og.html               source of the social preview image
+dev/page-mock.html        mock chat page with the on-page checkboxes
 site/                     landing page (GitHub Pages); its demo runs parsers.js + markdown.js
 ```
 

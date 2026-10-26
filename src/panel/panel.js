@@ -10,7 +10,9 @@
     "src/content/parsers.js",
     "src/content/extractors.js",
     "src/content/content.js",
+    "src/content/onpage.js",
   ];
+  const PANEL_DEFAULTS = { format: "markdown", markOnPage: true };
   const SOURCE_NAMES = { chatgpt: "ChatGPT", codex: "Codex", claude: "Claude", "claude-code": "Claude Code" };
 
   const $ = (id) => document.getElementById(id);
@@ -26,6 +28,8 @@
     lastIndex: null,
     options: { ...DEFAULT_OPTIONS },
     loadSeq: 0,
+    port: null,
+    baseStatus: "",
   };
 
   // ---------- loading ----------
@@ -58,6 +62,7 @@
     }
 
     const sameUrl = state.url === tab.url && state.conversation;
+    if (state.tabId !== tab.id || !sameUrl) disconnectMarks();
     state.tabId = tab.id;
     state.url = tab.url;
     setStatus("Loading conversation…");
@@ -88,8 +93,49 @@
     const n = state.turns.length;
     const via = res.method === "api" ? "complete" : "read from the page";
     const warn = res.warnings && res.warnings.length ? "Read from the page, so thinking and tool use may be missing." : "";
-    setStatus(warn || `${n} message${n === 1 ? "" : "s"} · ${via}`, !!warn);
+    state.baseStatus = warn || `${n} message${n === 1 ? "" : "s"} · ${via}`;
+    setStatus(state.baseStatus, !!warn);
     render();
+    syncMarks();
+  }
+
+  // ---------- checkboxes on the page ----------
+
+  function disconnectMarks() {
+    if (!state.port) return;
+    state.port.disconnect();
+    state.port = null;
+  }
+
+  function syncMarks() {
+    if (!state.options.markOnPage || !state.conversation || state.tabId == null) {
+      disconnectMarks();
+      return;
+    }
+    if (!state.port) {
+      try {
+        state.port = chrome.tabs.connect(state.tabId, { name: "chatdown-marks" });
+      } catch {
+        return;
+      }
+      const port = state.port;
+      port.onDisconnect.addListener(() => {
+        if (state.port === port) state.port = null;
+      });
+      port.onMessage.addListener((msg) => {
+        if (msg.type === "toggle") {
+          const index = state.turns.findIndex((t) => t.id === msg.id);
+          if (index >= 0) toggle(index, msg.shift);
+        } else if (msg.type === "status" && msg.total) {
+          const off = msg.matched === 0;
+          setStatus(off ? `${state.baseStatus} · Couldn't place checkboxes on this page` : state.baseStatus, $("status").classList.contains("warn"));
+        }
+      });
+    }
+    state.port.postMessage({
+      type: "marks",
+      turns: state.turns.map((t) => ({ id: t.id, role: t.role, messageIds: t.messageIds, selected: state.selected.has(t.id) })),
+    });
   }
 
   // ---------- rendering ----------
@@ -215,6 +261,7 @@
   function refreshSelection() {
     for (const li of $("turns").children) applySelected(li, state.turns[+li.dataset.index]);
     updateCount();
+    syncMarks();
   }
 
   function updateCount() {
@@ -362,12 +409,12 @@
   async function loadOptions() {
     try {
       const { options } = await chrome.storage.local.get("options");
-      state.options = { ...DEFAULT_OPTIONS, ...(options || {}) };
+      state.options = { ...DEFAULT_OPTIONS, ...PANEL_DEFAULTS, ...(options || {}) };
       // 0.1.0 stored its defaults; treat those as unset so the new names apply.
       if (state.options.userLabel === "User") state.options.userLabel = DEFAULT_OPTIONS.userLabel;
       if (state.options.assistantLabel === "Assistant") state.options.assistantLabel = DEFAULT_OPTIONS.assistantLabel;
     } catch {
-      state.options = { ...DEFAULT_OPTIONS };
+      state.options = { ...DEFAULT_OPTIONS, ...PANEL_DEFAULTS };
     }
     for (const el of document.querySelectorAll("[data-opt]")) {
       const v = state.options[el.dataset.opt];
@@ -384,6 +431,7 @@
     if (el.type === "text" && !v.trim()) v = DEFAULT_OPTIONS[el.dataset.opt];
     state.options[el.dataset.opt] = v;
     chrome.storage.local.set({ options: state.options });
+    if (el.dataset.opt === "markOnPage") syncMarks();
     if (state.conversation && (state.expanded.size || el.type === "text")) render();
   }
 

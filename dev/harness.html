@@ -93,6 +93,7 @@ print(list(reversed(xs)))</code></div></pre>
             conversation: mode === "dom" ? domConversation() : apiConversation(),
           }),
           create: async ({ url }) => console.log("tabs.create", url),
+          connect: () => ({ postMessage() {}, disconnect() {}, onMessage: { addListener() {} }, onDisconnect: { addListener() {} } }),
           onActivated: { addListener() {} },
           onUpdated: { addListener() {} },
         },
