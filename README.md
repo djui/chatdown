@@ -2,11 +2,18 @@
 
 Chrome extension that exports ChatGPT, Codex, Claude and Claude Code conversations to Markdown, with per-turn selection of which requests and responses to include.
 
-## Install (unpacked)
+**[Website and live demo](https://djui.github.io/chatdown/)** · **[Download](https://github.com/djui/chatdown/releases/latest)**
 
-1. `chrome://extensions` → enable **Developer mode**
-2. **Load unpacked** → select this folder
-3. Open a conversation and click the Chatdown toolbar icon. The export panel opens in Chrome's side panel.
+![Chatdown: pick turns, get clean Markdown](site/assets/og.png)
+
+## Install
+
+1. Download `chatdown-x.y.z.zip` from the [latest release](https://github.com/djui/chatdown/releases/latest) and unzip it.
+2. Open `chrome://extensions` and enable **Developer mode**.
+3. Click **Load unpacked** and choose the unzipped `chatdown` folder (or this repo, when developing).
+4. Open a conversation and click the Chatdown toolbar icon. The export panel opens in Chrome's side panel.
+
+Works in Chrome and other Chromium browsers (Edge, Brave, Arc).
 
 ## Use
 
@@ -41,6 +48,8 @@ src/content/content.js    message handler for the panel
 src/shared/markdown.js    turn grouping + Markdown rendering (pure)
 src/panel/                side panel UI
 dev/harness.html          panel in a normal tab with stubbed chrome.* and sample data
+dev/og.html               source of the social preview image
+site/                     landing page (GitHub Pages); its demo runs parsers.js + markdown.js
 ```
 
 ## Develop
@@ -48,8 +57,15 @@ dev/harness.html          panel in a normal tab with stubbed chrome.* and sample
 ```bash
 npm test                          # parser + renderer unit tests (node:test, no deps)
 python3 -m http.server 8765       # then open http://localhost:8765/dev/harness.html[?mode=dom]
+npm run site                      # landing page at http://localhost:8765
+npm run package                   # dist/chatdown-<version>.zip for a release
 python3 scripts/make-icons.py     # regenerate icons/
-npm run zip                       # chatdown.zip for the Chrome Web Store
 ```
+
+The landing page deploys from `site/` via `.github/workflows/pages.yml` on every push to `main` that touches it.
+
+## License
+
+MIT
 
 After code changes, press reload on the extension card in `chrome://extensions`.

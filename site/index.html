@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Chatdown: AI chats to clean Markdown</title>
+  <meta name="description" content="Chatdown is a free Chrome extension that exports ChatGPT, Codex, Claude and Claude Code conversations to Markdown. Pick exactly which requests and responses to keep. Nothing leaves your browser.">
+  <link rel="canonical" href="https://djui.github.io/chatdown/">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#131416" media="(prefers-color-scheme: dark)">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Chatdown">
+  <meta property="og:title" content="Chatdown: AI chats to clean Markdown">
+  <meta property="og:description" content="Export ChatGPT, Codex, Claude and Claude Code conversations to Markdown. Pick exactly which requests and responses to keep.">
+  <meta property="og:url" content="https://djui.github.io/chatdown/">
+  <meta property="og:image" content="https://djui.github.io/chatdown/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Chatdown's side panel listing requests and responses, next to the Markdown it produces.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Chatdown: AI chats to clean Markdown">
+  <meta name="twitter:description" content="Export ChatGPT, Codex, Claude and Claude Code conversations to Markdown. Pick exactly which turns to keep.">
+  <meta name="twitter:image" content="https://djui.github.io/chatdown/assets/og.png">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icon32.png">
+  <link rel="apple-touch-icon" href="assets/icon128.png">
+  <link rel="stylesheet" href="style.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Chatdown",
+    "description": "Chrome extension that exports ChatGPT, Codex, Claude and Claude Code conversations to Markdown, with per-turn selection.",
+    "applicationCategory": "BrowserApplication",
+    "operatingSystem": "Chrome, Chromium-based browsers",
+    "url": "https://djui.github.io/chatdown/",
+    "downloadUrl": "https://github.com/djui/chatdown/releases/latest",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Person", "name": "Uwe Dauernheim", "url": "https://github.com/djui" }
+  }
+  </script>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <img src="assets/icon32.png" alt="" width="22" height="22">
+      <span>Chatdown</span>
+    </a>
+    <nav aria-label="Page">
+      <ul>
+        <li><a href="#demo">Demo</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#install">Install</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a class="gh" href="https://github.com/djui/chatdown">GitHub</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero" id="top">
+    <div class="wrap">
+      <p class="eyebrow">Free Chrome extension · open source</p>
+      <h1>Your AI chats,<br>as clean <span class="md">Markdown</span>.</h1>
+      <p class="lede">
+        Chatdown exports ChatGPT, Codex, Claude and Claude&nbsp;Code conversations to a tidy <code>.md</code> file.
+        You choose exactly which requests and responses go in, and whether thinking and tool calls come along.
+      </p>
+      <div class="ctas">
+        <a class="btn primary" href="https://github.com/djui/chatdown/releases/latest" id="download">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5v8.2m0 0L4.8 6.5M8 9.7l3.2-3.2M2.5 11.5v2h11v-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Download <span data-version>the latest release</span>
+        </a>
+        <a class="btn" href="#demo">Try the live demo</a>
+      </div>
+      <ul class="sites" aria-label="Supported sites">
+        <li>ChatGPT</li><li>Codex</li><li>Claude</li><li>Claude Code</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="demo-section" id="demo" aria-labelledby="demo-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="demo-title">Try it right here</h2>
+        <p>This is Chatdown's real export code running on two sample conversations. Click turns to include or exclude them, flip the options, and watch the Markdown change.</p>
+      </div>
+
+      <div class="window">
+        <div class="window-bar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <div class="tabs" role="tablist" aria-label="Sample conversation">
+            <button role="tab" aria-selected="true" data-sample="claude">Claude sample</button>
+            <button role="tab" aria-selected="false" data-sample="chatgpt">ChatGPT sample</button>
+          </div>
+        </div>
+
+        <div class="window-body">
+          <div class="panel" aria-label="Chatdown panel">
+            <div class="panel-head">
+              <span class="badge" id="d-source">Claude</span>
+              <strong id="d-title">…</strong>
+            </div>
+            <div class="panel-tools">
+              <div class="seg" role="group" aria-label="Quick select">
+                <button data-select="all">All</button>
+                <button data-select="none">None</button>
+                <button data-select="user">Requests</button>
+                <button data-select="assistant">Responses</button>
+              </div>
+              <span class="count" id="d-count"></span>
+            </div>
+            <ol class="turns" id="d-turns"></ol>
+            <fieldset class="opts">
+              <legend>Options</legend>
+              <label><input type="checkbox" data-opt="includeThinking"> Thinking</label>
+              <label><input type="checkbox" data-opt="includeTools"> Tool calls</label>
+              <label><input type="checkbox" data-opt="collapseDetails" checked> Collapse</label>
+              <label><input type="checkbox" data-opt="includeTimestamps"> Timestamps</label>
+              <label><input type="checkbox" data-opt="frontMatter" checked> Front matter</label>
+              <label><input type="checkbox" data-opt="boldStyle"> Bold speakers</label>
+            </fieldset>
+          </div>
+
+          <div class="output">
+            <div class="output-head">
+              <span class="file" id="d-file">conversation.md</span>
+              <span class="stats" id="d-stats"></span>
+              <button class="mini" id="d-copy">Copy</button>
+              <button class="mini" id="d-download">Download</button>
+            </div>
+            <pre class="md-out" id="d-out" tabindex="0" aria-label="Generated Markdown"></pre>
+          </div>
+        </div>
+      </div>
+      <p class="demo-note">Click a turn to toggle it. Shift-click toggles a range.</p>
+    </div>
+  </section>
+
+  <section class="how" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="how-title">Three clicks, one file</h2>
+      </div>
+      <ol class="steps">
+        <li>
+          <span class="step-n">1</span>
+          <h3>Open a conversation</h3>
+          <p>Any chat on ChatGPT or Claude, or a Codex task or Claude&nbsp;Code session. Chatdown reads the conversation you're on.</p>
+        </li>
+        <li>
+          <span class="step-n">2</span>
+          <h3>Click the Chatdown icon</h3>
+          <p>The side panel lists every request and response as a card, with markers for tool calls, thinking, code and attachments.</p>
+        </li>
+        <li>
+          <span class="step-n">3</span>
+          <h3>Pick and export</h3>
+          <p>Drop the dead ends, keep the good parts. Then copy the Markdown, preview it, or download a <code>.md</code> file named after the chat.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="features" aria-labelledby="feat-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="feat-title">What comes out is worth keeping</h2>
+        <p>Chatdown reads the conversation itself, not a screenshot of it, so the file is faithful and quiet.</p>
+      </div>
+      <div class="grid">
+        <article>
+          <h3>Turn-by-turn selection</h3>
+          <p>Include or exclude any request or response. Quick filters keep only your prompts, only the answers, or everything.</p>
+        </article>
+        <article>
+          <h3>Only the branch you see</h3>
+          <p>Edited a prompt or regenerated an answer? Chatdown follows the branch that's on screen and skips the abandoned ones.</p>
+        </article>
+        <article>
+          <h3>Thinking &amp; tool calls, if you want them</h3>
+          <p>Reasoning, searches, code runs and their results fold into collapsible <code>&lt;details&gt;</code> blocks, or are left out entirely.</p>
+        </article>
+        <article>
+          <h3>Code stays code</h3>
+          <p>Fenced blocks keep their language, nested fences are escaped, and Claude artifacts are exported as titled code blocks.</p>
+        </article>
+        <article>
+          <h3>Ready for your notes</h3>
+          <p>Optional YAML front matter (title, source, URL, model, dates) drops straight into Obsidian, a docs repo or a static site.</p>
+        </article>
+        <article>
+          <h3>Nothing leaves your browser</h3>
+          <p>No servers, no accounts, no analytics. Chatdown asks the site you're on for the chat, using the session you already have.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="support" aria-labelledby="support-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="support-title">Where it works</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th scope="col">Site</th><th scope="col">Pages</th><th scope="col">How Chatdown reads it</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">ChatGPT</th><td><code>chatgpt.com/c/…</code></td><td><span class="pill full">Full export</span> from the conversation data, with a fallback to the page</td></tr>
+            <tr><th scope="row">Claude</th><td><code>claude.ai/chat/…</code></td><td><span class="pill full">Full export</span> from the conversation data, with a fallback to the page</td></tr>
+            <tr><th scope="row">Codex</th><td><code>chatgpt.com/codex/…</code></td><td><span class="pill page">From the page</span> what's rendered on screen</td></tr>
+            <tr><th scope="row">Claude Code</th><td><code>claude.ai/code/…</code></td><td><span class="pill page">From the page</span> what's rendered on screen</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="fine"><strong>Full export</strong> includes thinking, tool calls and results, artifacts and attachments. <strong>From the page</strong> captures the visible text, code, lists, tables, links and math. The panel always tells you which one it used.</p>
+    </div>
+  </section>
+
+  <section class="install" id="install" aria-labelledby="install-title">
+    <div class="wrap install-grid">
+      <div>
+        <h2 id="install-title">Install</h2>
+        <p>Chatdown isn't in the Chrome Web Store yet. Loading it yourself takes a minute and works in Chrome, Edge, Brave, Arc and other Chromium browsers.</p>
+        <a class="btn primary" href="https://github.com/djui/chatdown/releases/latest">Download <span data-version>the latest release</span></a>
+      </div>
+      <ol class="install-steps">
+        <li>Download <code>chatdown-<span data-version-bare>x.y.z</span>.zip</code> from the release and unzip it.</li>
+        <li>Open <code>chrome://extensions</code> and switch on <b>Developer mode</b> (top right).</li>
+        <li>Click <b>Load unpacked</b> and choose the unzipped <code>chatdown</code> folder.</li>
+        <li>Pin Chatdown from the puzzle-piece menu, open a chat, and click the icon.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="faq" id="faq" aria-labelledby="faq-title">
+    <div class="wrap narrow">
+      <h2 id="faq-title">Questions</h2>
+      <details>
+        <summary>Does Chatdown send my conversations anywhere?</summary>
+        <p>No. It has no server. When you open the panel it asks the site you're on, for example chatgpt.com, for the current conversation, using the login you already have, and turns it into Markdown inside your browser. The only thing it stores is your export options.</p>
+      </details>
+      <details>
+        <summary>Why does it need these permissions?</summary>
+        <p><b>Side panel</b> for the UI, <b>access to chatgpt.com and claude.ai</b> to read the open conversation, <b>tabs</b> to notice when you switch chats, <b>scripting</b> to work in tabs that were open before you installed it, and <b>storage</b> for your options. It can't see any other site.</p>
+      </details>
+      <details>
+        <summary>What about regenerated answers and edited prompts?</summary>
+        <p>For ChatGPT and Claude, Chatdown exports the branch you're looking at, the same path through the conversation you see on screen. Switch branches in the chat, then press reload in the panel to export a different one.</p>
+      </details>
+      <details>
+        <summary>Codex or Claude Code missed something. Why?</summary>
+        <p>For those two, Chatdown reads the rendered page rather than the underlying data, and their pages change often. If an export looks off, please <a href="https://github.com/djui/chatdown/issues/new">open an issue</a> with the page type, and we'll tighten the selectors.</p>
+      </details>
+      <details>
+        <summary>Other formats?</summary>
+        <p>Markdown for now. Because every site is first turned into one common format, HTML, JSON or plain-text exports are straightforward to add.</p>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-inner">
+    <span class="brand"><img src="assets/icon32.png" alt="" width="18" height="18"> Chatdown</span>
+    <span>MIT licensed · by <a href="https://github.com/djui">Uwe Dauernheim</a></span>
+    <span>Not affiliated with OpenAI or Anthropic.</span>
+    <a href="https://github.com/djui/chatdown">Source on GitHub</a>
+  </div>
+</footer>
+
+<script src="lib/parsers.js"></script>
+<script src="lib/markdown.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
