@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chatdown</title>
+    <link rel="stylesheet" href="panel.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="title-row">
+        <span id="source" class="badge" hidden></span>
+        <h1 id="title">Chatdown</h1>
+        <button id="refresh" class="icon" title="Reload conversation" aria-label="Reload conversation">↻</button>
+      </div>
+      <p id="status" class="status"></p>
+    </header>
+
+    <section id="empty" class="empty" hidden>
+      <p id="empty-text"></p>
+    </section>
+
+    <main id="main" hidden>
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Quick select">
+          <button data-select="all">All</button>
+          <button data-select="none">None</button>
+          <button data-select="user">Requests</button>
+          <button data-select="assistant">Responses</button>
+          <button data-select="invert">Invert</button>
+        </div>
+        <span id="count" class="count"></span>
+      </div>
+      <p class="hint">Click to toggle · Shift-click to toggle a range</p>
+      <ol id="turns" class="turns"></ol>
+    </main>
+
+    <footer id="footer" class="bottom" hidden>
+      <details id="options" class="options">
+        <summary>Options</summary>
+        <div class="opts">
+          <label><input type="checkbox" data-opt="includeThinking" /> Thinking</label>
+          <label><input type="checkbox" data-opt="includeTools" /> Tool calls &amp; results</label>
+          <label><input type="checkbox" data-opt="collapseDetails" /> Collapse in &lt;details&gt;</label>
+          <label><input type="checkbox" data-opt="includeTimestamps" /> Timestamps &amp; model</label>
+          <label><input type="checkbox" data-opt="frontMatter" /> YAML front matter</label>
+          <label class="row">
+            Speaker
+            <select data-opt="headingStyle">
+              <option value="heading">## Heading</option>
+              <option value="bold">**Bold** + rule</option>
+            </select>
+          </label>
+          <label class="row">Request label <input type="text" data-opt="userLabel" /></label>
+          <label class="row">Response label <input type="text" data-opt="assistantLabel" /></label>
+        </div>
+      </details>
+      <div class="actions">
+        <button id="preview-btn">Preview</button>
+        <button id="copy-btn">Copy</button>
+        <button id="download-btn" class="primary">Download .md</button>
+      </div>
+    </footer>
+
+    <dialog id="preview">
+      <form method="dialog" class="preview-head">
+        <strong>Markdown preview</strong>
+        <button value="close" class="icon" aria-label="Close">✕</button>
+      </form>
+      <textarea id="preview-text" readonly spellcheck="false"></textarea>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="../shared/markdown.js"></script>
+    <script src="panel.js"></script>
+  </body>
+</html>

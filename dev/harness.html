@@ -1,0 +1,122 @@
+<!doctype html>
+<!--
+  Dev harness: renders the side panel outside Chrome's extension runtime with
+  stubbed chrome.* APIs and sample data.
+    python3 -m http.server 8765   (from the repo root)
+    http://localhost:8765/dev/harness.html          sample parsed via the Claude API parser
+    http://localhost:8765/dev/harness.html?mode=dom  sample ChatGPT-like DOM via html2md
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chatdown harness</title>
+  </head>
+  <body>
+    <template id="sample-dom">
+      <div data-message-author-role="user"><div class="whitespace-pre-wrap">How do I reverse a list in Python?
+Keep it short.</div></div>
+      <div data-message-author-role="assistant">
+        <div class="markdown">
+          <p>Use <strong>slicing</strong> or <code>reversed()</code>:</p>
+          <pre><div>python<button>Copy code</button></div><div><code class="language-python">xs = [1, 2, 3]
+print(xs[::-1])
+
+print(list(reversed(xs)))</code></div></pre>
+          <ul>
+            <li>Slicing <em>copies</em> the list</li>
+            <li>In place:
+              <ol><li><code>xs.reverse()</code></li><li>returns <code>None</code></li></ol>
+            </li>
+          </ul>
+          <table><thead><tr><th>Way</th><th>Copy?</th></tr></thead><tbody><tr><td><code>[::-1]</code></td><td>yes</td></tr><tr><td>reverse()</td><td>no | in place</td></tr></tbody></table>
+          <blockquote><p>See <a href="https://docs.python.org/3/">the docs</a>.</p></blockquote>
+          <p>Math: <span class="katex"><span class="katex-mathml"><math><semantics><annotation encoding="application/x-tex">O(n)</annotation></semantics></math></span><span aria-hidden="true">O(n)</span></span></p>
+        </div>
+      </div>
+    </template>
+
+    <script src="../src/content/html2md.js"></script>
+    <script src="../src/content/parsers.js"></script>
+    <script>
+      const mode = new URLSearchParams(location.search).get("mode") || "api";
+      const ROOT = "00000000-0000-4000-8000-000000000000";
+
+      function apiConversation() {
+        return ChatdownParsers.parseClaude(
+          {
+            name: "Designing a cache layer",
+            model: "claude-x",
+            created_at: "2026-10-20T09:00:00Z",
+            current_leaf_message_uuid: "m6",
+            chat_messages: [
+              { uuid: "m1", parent_message_uuid: ROOT, sender: "human", created_at: "2026-10-20T09:00:00Z", content: [{ type: "text", text: "We need a cache in front of our pricing API. Where do I start?" }] },
+              {
+                uuid: "m2", parent_message_uuid: "m1", sender: "assistant", created_at: "2026-10-20T09:00:09Z",
+                content: [
+                  { type: "thinking", thinking: "They want a starting point; ask about read/write ratio." },
+                  { type: "tool_use", name: "web_search", input: { query: "read-through cache invalidation" } },
+                  { type: "tool_result", name: "web_search", content: [{ type: "text", text: "3 results" }] },
+                  { type: "text", text: "Start with a **read-through** cache:\n\n```ts\nconst v = await cache.get(k) ?? await load(k);\n```\n\nThen decide on TTLs." },
+                ],
+              },
+              { uuid: "m3", parent_message_uuid: "m2", sender: "human", content: [{ type: "text", text: "What TTL for prices that change hourly?" }], attachments: [{ file_name: "pricing.csv", extracted_content: "sku,price\nA,10" }] },
+              { uuid: "m4", parent_message_uuid: "m3", sender: "assistant", content: [{ type: "text", text: "Use 5–10 minutes plus explicit invalidation on price updates." }] },
+              { uuid: "m5", parent_message_uuid: "m4", sender: "human", content: [{ type: "text", text: "Write it up as a short doc." }] },
+              { uuid: "m6", parent_message_uuid: "m5", sender: "assistant", content: [{ type: "tool_use", name: "artifacts", input: { title: "Cache design", type: "text/markdown", content: "# Cache design\n\n- read-through\n- TTL 5m" } }, { type: "text", text: "Here's the doc." }] },
+            ],
+          },
+          "https://claude.ai/chat/00000000-0000-0000-0000-000000000001"
+        );
+      }
+
+      function domConversation() {
+        const host = document.createElement("div");
+        host.appendChild(document.getElementById("sample-dom").content.cloneNode(true));
+        const messages = [...host.querySelectorAll("[data-message-author-role]")].map((el, i) => {
+          const role = el.getAttribute("data-message-author-role");
+          const content = el.querySelector(".markdown") || el.querySelector(".whitespace-pre-wrap");
+          const text = role === "user" ? content.textContent.trim() : ChatdownHtml2Md.htmlToMarkdown(content);
+          return { id: `dom-${i}`, role, blocks: [{ type: "text", text }] };
+        });
+        return { source: "chatgpt", title: "Reverse a list", url: "https://chatgpt.com/c/x", messages };
+      }
+
+      const store = {};
+      window.chrome = {
+        tabs: {
+          query: async () => [{ id: 1, url: mode === "dom" ? "https://chatgpt.com/c/x" : "https://claude.ai/chat/x" }],
+          sendMessage: async () => ({
+            ok: true,
+            method: mode === "dom" ? "dom" : "api",
+            warnings: mode === "dom" ? ["API export failed (harness); used page content instead."] : [],
+            conversation: mode === "dom" ? domConversation() : apiConversation(),
+          }),
+          onActivated: { addListener() {} },
+          onUpdated: { addListener() {} },
+        },
+        scripting: { executeScript: async () => {} },
+        storage: { local: { get: async (k) => ({ [k]: store[k] }), set: async (o) => Object.assign(store, o) } },
+      };
+
+      // Mount the real panel markup, stylesheet and scripts into this page.
+      (async () => {
+        const html = await (await fetch("../src/panel/panel.html")).text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const css = document.createElement("link");
+        css.rel = "stylesheet";
+        css.href = "../src/panel/panel.css";
+        document.head.appendChild(css);
+        for (const n of [...doc.body.children]) if (n.tagName !== "SCRIPT") document.body.appendChild(n);
+        for (const src of ["../src/shared/markdown.js", "../src/panel/panel.js"]) {
+          await new Promise((res) => {
+            const s = document.createElement("script");
+            s.src = src;
+            s.onload = res;
+            document.body.appendChild(s);
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>
